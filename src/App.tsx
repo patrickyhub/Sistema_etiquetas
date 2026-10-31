@@ -94,106 +94,83 @@ const PriceTag: React.FC<{
   const isSmall = labelWidth < 55;
   const isMedium = labelWidth >= 55 && labelWidth < 75;
 
+  // Calculate barcode width based on label size
+  const barcodeWidthPx = isSmall ? Math.round(widthPx * 0.45) : Math.round(widthPx * 0.4);
+  const priceBadgePadding = isSmall ? "2px 6px 4px 10px" : "3px 8px 5px 14px";
+  const priceBadgeRadius = isSmall ? "30px" : "40px";
+
   return (
     <div
       className="price-tag"
       style={{
         width: `${widthPx}px`,
         height: `${heightPx}px`,
-        padding: isSmall ? "3px 4px" : "4px 6px",
       }}
     >
-      {/* Corner Ribbon */}
-      {showRibbon && item.ribbon && (
-        <div className={`corner-ribbon ${item.ribbon.toLowerCase()}`}>
-          <span>{item.ribbon}</span>
-        </div>
-      )}
-
-      {/* Store Badge */}
+      {/* Store Badge - Top Left */}
       {showStoreBadge && (
-        <div
-          style={{
-            background: "#0a2540",
-            color: "#fff",
-            fontSize: isSmall ? "6px" : "7px",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            padding: isSmall ? "1px 4px" : "2px 6px",
-            borderRadius: "10px",
-            display: "inline-block",
-            letterSpacing: "0.3px",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            maxWidth: isSmall ? "60%" : "50%",
-          }}
-        >
+        <div className="store-badge" style={{ fontSize: isSmall ? "6px" : "7px" }}>
           {storeName}
         </div>
       )}
 
-      {/* Product Name */}
+      {/* Corner Ribbon - Top Right */}
+      {showRibbon && item.ribbon && (
+        <div className={`corner-ribbon ${item.ribbon.toLowerCase()}`}>
+          {item.ribbon}
+        </div>
+      )}
+
+      {/* Product Name - Center/Left area */}
       {showName && (
         <div
           className="product-name"
           style={{
             fontSize: `${nameFontSize}px`,
             WebkitLineClamp: isSmall ? 2 : 3,
-            marginTop: showStoreBadge ? "2px" : "0",
-            lineHeight: 1.15,
+            position: "absolute",
+            top: showStoreBadge ? (isSmall ? "14px" : "16px") : "3px",
+            left: "4px",
+            right: isSmall ? "4px" : "6px",
+            lineHeight: 1.05,
           }}
         >
           {item.name}
         </div>
       )}
 
-      {/* Bottom section: Barcode + Price */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: isSmall ? "3px" : "4px",
-          left: isSmall ? "4px" : "6px",
-          right: isSmall ? "4px" : "6px",
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          gap: "4px",
-        }}
-      >
-        {/* Barcode & SKU */}
-        {showBarcode && item.sku && (
-          <div className="barcode-section" style={{ flex: 1, minWidth: 0 }}>
-            <svg ref={barcodeRef}></svg>
-            <div className="sku-text">SKU: {item.sku}</div>
-          </div>
-        )}
+      {/* Barcode & SKU - Bottom Left */}
+      {showBarcode && item.sku && (
+        <div className="barcode-section" style={{ width: `${barcodeWidthPx}px` }}>
+          <svg ref={barcodeRef}></svg>
+          <div className="sku-text">SKU: {item.sku}</div>
+        </div>
+      )}
 
-        {/* Price Badge */}
-        {showPrice && (
-          <div
-            className="price-badge"
-            style={{
-              padding: isSmall ? "2px 4px" : "3px 6px",
-              flexShrink: 0,
-            }}
+      {/* Price Badge - Bottom Right (Curved wedge shape) */}
+      {showPrice && (
+        <div
+          className="price-badge"
+          style={{
+            padding: priceBadgePadding,
+            borderTopLeftRadius: priceBadgeRadius,
+          }}
+        >
+          <span
+            className="price-currency"
+            style={{ fontSize: isSmall ? "7px" : isMedium ? "9px" : "11px" }}
           >
-            <span
-              className="price-currency"
-              style={{ fontSize: isSmall ? "8px" : isMedium ? "10px" : "12px" }}
-            >
-              S/.
-            </span>
-            <span
-              className="price-integer"
-              style={{ fontSize: `${priceFontSize}px` }}
-            >
-              {integer}
-            </span>
-            <span className="price-decimal">.{decimal}</span>
-          </div>
-        )}
-      </div>
+            S/.
+          </span>
+          <span
+            className="price-integer"
+            style={{ fontSize: `${priceFontSize}px` }}
+          >
+            {integer}
+          </span>
+          <span className="price-decimal">.{decimal}</span>
+        </div>
+      )}
     </div>
   );
 };

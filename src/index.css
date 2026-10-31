@@ -23,91 +23,140 @@
   break-inside: avoid;
 }
 
+/* Corner Ribbon - Sharp corner banner */
 .price-tag .corner-ribbon {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 70px;
-  height: 70px;
-  overflow: hidden;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.price-tag .corner-ribbon span {
-  position: absolute;
-  display: block;
+  top: 12px;
+  right: -25px;
   width: 100px;
-  padding: 4px 0;
   text-align: center;
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 800;
   color: #fff;
   text-transform: uppercase;
   transform: rotate(45deg);
-  top: 16px;
-  right: -22px;
   letter-spacing: 0.5px;
+  padding: 2px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  pointer-events: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-.price-tag .corner-ribbon.oferta span {
+.price-tag .corner-ribbon.oferta {
   background: #dc2626;
 }
 
-.price-tag .corner-ribbon.nuevo span {
+.price-tag .corner-ribbon.nuevo {
   background: #16a34a;
 }
 
+/* Product Name - Extra bold, multi-line */
 .price-tag .product-name {
-  font-weight: 800;
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-weight: 900;
   text-transform: uppercase;
   color: #000;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.15;
+  line-height: 1.05;
   word-break: break-word;
+  letter-spacing: -0.3px;
 }
 
+/* Green Price Badge - Curved wedge shape, flush to bottom-right */
 .price-tag .price-badge {
-  background: #76e026;
-  border-radius: 6px;
-  padding: 4px 8px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #6be31b;
+  border-top-left-radius: 40px;
+  padding: 4px 8px 6px 12px;
   display: flex;
   align-items: flex-end;
   gap: 1px;
+  z-index: 5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  box-sizing: border-box;
 }
 
 .price-tag .price-currency {
   color: #dc2626;
-  font-weight: 800;
+  font-weight: 900;
   align-self: flex-start;
   margin-top: 2px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .price-tag .price-integer {
   color: #dc2626;
   font-weight: 900;
-  line-height: 1;
+  line-height: 0.9;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .price-tag .price-decimal {
   color: #dc2626;
-  font-weight: 700;
-  font-size: 0.45em;
+  font-weight: 800;
+  font-size: 0.4em;
   align-self: flex-start;
-  margin-top: 2px;
+  margin-top: 3px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Barcode Section */
+.price-tag .barcode-section {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 2px 4px 3px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 4;
 }
 
 .price-tag .barcode-section svg {
   max-width: 100%;
   height: auto;
+  display: block;
 }
 
 .price-tag .sku-text {
-  font-size: 8px;
-  color: #475569;
-  font-family: monospace;
+  font-size: 7px;
+  color: #1e293b;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  margin-top: 1px;
+  letter-spacing: 0.3px;
+}
+
+/* Store Badge - Top left */
+.price-tag .store-badge {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  background: #0a2540;
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 7px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50%;
+  z-index: 6;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 /* A4 Page */
