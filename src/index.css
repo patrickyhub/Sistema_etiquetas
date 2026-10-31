@@ -52,7 +52,7 @@
   background: #16a34a;
 }
 
-/* Product Name - Extra bold, multi-line */
+/* Product Name - Extra bold, multi-line wrapping */
 .price-tag .product-name {
   font-family: Impact, 'Arial Black', sans-serif;
   font-weight: 900;
@@ -60,23 +60,28 @@
   color: #000;
   display: -webkit-box;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
   overflow: hidden;
-  line-height: 1.05;
+  line-height: 1.1;
   word-break: break-word;
   letter-spacing: -0.3px;
+  max-width: 58%;
+  font-size: 14px;
 }
 
-/* Green Price Badge - Curved wedge shape, flush to bottom-right */
+/* Green Price Badge - Large curved wedge shape, flush to bottom-right */
 .price-tag .price-badge {
   position: absolute;
   bottom: 0;
   right: 0;
+  width: 48%;
+  height: 58%;
   background: #6be31b;
-  border-top-left-radius: 40px;
-  padding: 4px 8px 6px 12px;
+  border-top-left-radius: 100% 85%;
   display: flex;
   align-items: flex-end;
-  gap: 1px;
+  justify-content: center;
+  padding: 8px 12px 10px 20px;
   z-index: 5;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
@@ -87,7 +92,8 @@
   color: #dc2626;
   font-weight: 900;
   align-self: flex-start;
-  margin-top: 2px;
+  margin-top: 4px;
+  margin-right: 2px;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -95,7 +101,7 @@
 .price-tag .price-integer {
   color: #dc2626;
   font-weight: 900;
-  line-height: 0.9;
+  line-height: 0.85;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -103,14 +109,15 @@
 .price-tag .price-decimal {
   color: #dc2626;
   font-weight: 800;
-  font-size: 0.4em;
+  font-size: 0.35em;
   align-self: flex-start;
-  margin-top: 3px;
+  margin-top: 5px;
+  margin-left: 1px;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
-/* Barcode Section */
+/* Barcode Section - Bottom Left */
 .price-tag .barcode-section {
   position: absolute;
   bottom: 0;
@@ -120,6 +127,7 @@
   flex-direction: column;
   align-items: flex-start;
   z-index: 4;
+  max-width: 50%;
 }
 
 .price-tag .barcode-section svg {
@@ -129,10 +137,11 @@
 }
 
 .price-tag .sku-text {
-  font-size: 7px;
+  font-size: 8px;
   color: #1e293b;
   font-family: 'Courier New', Courier, monospace;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
   margin-top: 1px;
   letter-spacing: 0.3px;
 }

@@ -94,10 +94,11 @@ const PriceTag: React.FC<{
   const isSmall = labelWidth < 55;
   const isMedium = labelWidth >= 55 && labelWidth < 75;
 
-  // Calculate barcode width based on label size
-  const barcodeWidthPx = isSmall ? Math.round(widthPx * 0.45) : Math.round(widthPx * 0.4);
-  const priceBadgePadding = isSmall ? "2px 6px 4px 10px" : "3px 8px 5px 14px";
-  const priceBadgeRadius = isSmall ? "30px" : "40px";
+  // Calculate price font size based on label size
+  const priceFontSizeAdjusted = isSmall ? Math.min(priceFontSize, 28) : 
+                                  isMedium ? Math.min(priceFontSize, 34) : 
+                                  priceFontSize;
+  const currencyFontSize = isSmall ? "8px" : isMedium ? "10px" : "13px";
 
   return (
     <div
@@ -121,18 +122,16 @@ const PriceTag: React.FC<{
         </div>
       )}
 
-      {/* Product Name - Center/Left area */}
+      {/* Product Name - Top Left area, multi-line wrapping */}
       {showName && (
         <div
           className="product-name"
           style={{
-            fontSize: `${nameFontSize}px`,
-            WebkitLineClamp: isSmall ? 2 : 3,
             position: "absolute",
             top: showStoreBadge ? (isSmall ? "14px" : "16px") : "3px",
             left: "4px",
-            right: isSmall ? "4px" : "6px",
-            lineHeight: 1.05,
+            fontSize: `${nameFontSize}px`,
+            WebkitLineClamp: isSmall ? 2 : 3,
           }}
         >
           {item.name}
@@ -141,30 +140,24 @@ const PriceTag: React.FC<{
 
       {/* Barcode & SKU - Bottom Left */}
       {showBarcode && item.sku && (
-        <div className="barcode-section" style={{ width: `${barcodeWidthPx}px` }}>
+        <div className="barcode-section">
           <svg ref={barcodeRef}></svg>
           <div className="sku-text">SKU: {item.sku}</div>
         </div>
       )}
 
-      {/* Price Badge - Bottom Right (Curved wedge shape) */}
+      {/* Price Badge - Bottom Right (Large curved wedge shape) */}
       {showPrice && (
-        <div
-          className="price-badge"
-          style={{
-            padding: priceBadgePadding,
-            borderTopLeftRadius: priceBadgeRadius,
-          }}
-        >
+        <div className="price-badge">
           <span
             className="price-currency"
-            style={{ fontSize: isSmall ? "7px" : isMedium ? "9px" : "11px" }}
+            style={{ fontSize: currencyFontSize }}
           >
             S/.
           </span>
           <span
             className="price-integer"
-            style={{ fontSize: `${priceFontSize}px` }}
+            style={{ fontSize: `${priceFontSizeAdjusted}px` }}
           >
             {integer}
           </span>
@@ -195,9 +188,9 @@ export default function App() {
   const [storeName, setStoreName] = useState("IMPORTACIONES");
 
   // Font sizes
-  const [nameFontSize, setNameFontSize] = useState(11);
-  const [priceFontSize, setPriceFontSize] = useState(22);
-  const [barcodeHeight, setBarcodeHeight] = useState(30);
+  const [nameFontSize, setNameFontSize] = useState(14);
+  const [priceFontSize, setPriceFontSize] = useState(32);
+  const [barcodeHeight, setBarcodeHeight] = useState(24);
 
   // Label dimensions
   const [labelWidth, setLabelWidth] = useState(80);
@@ -384,7 +377,7 @@ export default function App() {
               </div>
               <input
                 type="range"
-                min="6"
+                min="8"
                 max="20"
                 value={nameFontSize}
                 onChange={(e) => setNameFontSize(Number(e.target.value))}
@@ -398,8 +391,8 @@ export default function App() {
               </div>
               <input
                 type="range"
-                min="12"
-                max="42"
+                min="18"
+                max="48"
                 value={priceFontSize}
                 onChange={(e) => setPriceFontSize(Number(e.target.value))}
                 className="slider-input w-full"
@@ -412,8 +405,8 @@ export default function App() {
               </div>
               <input
                 type="range"
-                min="15"
-                max="50"
+                min="16"
+                max="40"
                 value={barcodeHeight}
                 onChange={(e) => setBarcodeHeight(Number(e.target.value))}
                 className="slider-input w-full"
