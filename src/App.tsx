@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 
 // Declare global types for CDN libraries
 declare const JsBarcode: any;
@@ -22,6 +22,7 @@ interface LabelPreset {
 const LABEL_PRESETS: LabelPreset[] = [
   { name: "40x20mm", width: 40, height: 20 },
   { name: "50x30mm", width: 50, height: 30 },
+  { name: "66x34mm", width: 66, height: 34 },
   { name: "80x40mm", width: 80, height: 40 },
 ];
 
@@ -39,6 +40,9 @@ function formatPrice(price: number): { integer: string; decimal: string } {
 }
 
 // Price Tag Component
+// Diseño: tarjeta verde con franja blanca diagonal, insignia azul inclinada,
+// cinta triangular en la esquina, esquina azul inferior y precio rojo.
+// Todas las medidas se escalan con el ancho de la etiqueta (base 80mm).
 const PriceTag: React.FC<{
   item: PriceItem;
   labelWidth: number;
@@ -69,36 +73,83 @@ const PriceTag: React.FC<{
   tagId,
 }) => {
   const barcodeRef = useRef<SVGSVGElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
   const { integer, decimal } = formatPrice(item.price);
+
+  const widthPx = Math.round(labelWidth * 3.7795);
+  const heightPx = Math.round(labelHeight * 3.7795);
+  // Factor de escala respecto a la etiqueta base de 80mm de ancho
+  const s = labelWidth / 80;
+  // Tamaño en px de la tarjeta (descontando el margen de corte)
+  const gutter = 5 * s;
+  const cardW = widthPx - gutter * 2;
+  const cardH = heightPx - gutter * 2;
+  const ribbonSize = Math.min(cardW * 0.27, cardH * 0.55);
+  const barcodeW = cardW * 0.33;
+  const barcodeH = barcodeHeight * s;
+
+  // Altura disponible para el nombre (hasta donde empieza el código de barras)
+  const nameTop = showStoreBadge ? cardH * 0.25 : cardH * 0.1;
+  const hasBarcode = showBarcode && !!item.sku;
+  const nameBottomLimit = hasBarcode
+    ? cardH * (1 - 0.06) - barcodeH - 11 * s - cardH * 0.03
+    : cardH * 0.94;
+  const nameMaxH = Math.max(10, nameBottomLimit - nameTop);
+
+  // Re-calcular el auto-ajuste cuando la tipografía termine de cargar
+  const [fontTick, setFontTick] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    (document as any).fonts?.ready?.then(() => alive && setFontTick((n) => n + 1));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Auto-ajuste: reduce la fuente del nombre hasta que quepa sin tapar el código de barras
+  useLayoutEffect(() => {
+    const el = nameRef.current;
+    if (!el) return;
+    let size = nameFontSize * s;
+    el.style.fontSize = `${size}px`;
+    const minSize = 7 * s;
+    while (
+      size > minSize &&
+      (el.scrollHeight > nameMaxH + 0.5 || el.scrollWidth > el.clientWidth + 0.5)
+    ) {
+      size -= 0.5;
+      el.style.fontSize = `${size}px`;
+    }
+  }, [item.name, nameFontSize, s, nameMaxH, cardW, showName, fontTick]);
 
   useEffect(() => {
     if (showBarcode && barcodeRef.current && item.sku) {
       try {
         JsBarcode(barcodeRef.current, item.sku, {
           format: "CODE128",
-          width: 1.5,
-          height: barcodeHeight,
+          width: 1,
+          height: 40,
           displayValue: false,
           margin: 0,
           background: "transparent",
         });
+        // Ajustar el SVG al ancho/alto deseado manteniendo las barras nítidas
+        const svg = barcodeRef.current;
+        const w = svg.getAttribute("width");
+        const h = svg.getAttribute("height");
+        if (w && h && !svg.getAttribute("viewBox")) {
+          svg.setAttribute("viewBox", `0 0 ${parseFloat(w)} ${parseFloat(h)}`);
+        }
+        svg.setAttribute("preserveAspectRatio", "none");
+        svg.setAttribute("width", String(barcodeW));
+        svg.setAttribute("height", String(barcodeH));
+        svg.style.width = `${barcodeW}px`;
+        svg.style.height = `${barcodeH}px`;
       } catch (e) {
         // fallback if barcode generation fails
       }
     }
-  }, [item.sku, showBarcode, barcodeHeight, tagId]);
-
-  const widthPx = Math.round(labelWidth * 3.7795);
-  const heightPx = Math.round(labelHeight * 3.7795);
-
-  const isSmall = labelWidth < 55;
-  const isMedium = labelWidth >= 55 && labelWidth < 75;
-
-  // Calculate price font size based on label size
-  const priceFontSizeAdjusted = isSmall ? Math.min(priceFontSize, 28) : 
-                                  isMedium ? Math.min(priceFontSize, 34) : 
-                                  priceFontSize;
-  const currencyFontSize = isSmall ? "8px" : isMedium ? "10px" : "13px";
+  }, [item.sku, showBarcode, barcodeW, barcodeH, tagId]);
 
   return (
     <div
@@ -106,64 +157,102 @@ const PriceTag: React.FC<{
       style={{
         width: `${widthPx}px`,
         height: `${heightPx}px`,
+        padding: `${gutter}px`,
       }}
     >
-      {/* Store Badge - Top Left */}
-      {showStoreBadge && (
-        <div className="store-badge" style={{ fontSize: isSmall ? "6px" : "7px" }}>
-          {storeName}
-        </div>
-      )}
+      <div className="tag-card" style={{ borderRadius: `${16 * s}px` }}>
+        {/* Franja blanca diagonal */}
+        <div className="tag-white" />
 
-      {/* Corner Ribbon - Top Right */}
-      {showRibbon && item.ribbon && (
-        <div className={`corner-ribbon ${item.ribbon.toLowerCase()}`}>
-          {item.ribbon}
-        </div>
-      )}
-
-      {/* Product Name - Top Left area, multi-line wrapping */}
-      {showName && (
+        {/* Esquina azul inferior derecha */}
         <div
-          className="product-name"
-          style={{
-            position: "absolute",
-            top: showStoreBadge ? (isSmall ? "14px" : "16px") : "3px",
-            left: "4px",
-            fontSize: `${nameFontSize}px`,
-            WebkitLineClamp: isSmall ? 2 : 3,
-          }}
-        >
-          {item.name}
-        </div>
-      )}
+          className="navy-corner"
+          style={{ width: `${cardW * 0.17}px`, height: `${cardH * 0.28}px` }}
+        />
 
-      {/* Barcode & SKU - Bottom Left */}
-      {showBarcode && item.sku && (
-        <div className="barcode-section">
-          <svg ref={barcodeRef}></svg>
-          <div className="sku-text">SKU: {item.sku}</div>
-        </div>
-      )}
+        {/* Insignia de tienda - arriba a la izquierda */}
+        {showStoreBadge && (
+          <div
+            className="store-badge"
+            style={{
+              fontSize: `${9.5 * s}px`,
+              height: `${cardH * 0.19}px`,
+              paddingLeft: `${cardW * 0.045}px`,
+              paddingRight: `${cardW * 0.075}px`,
+              borderTopLeftRadius: `${16 * s}px`,
+              borderBottomRightRadius: `${6 * s}px`,
+            }}
+          >
+            {storeName}
+          </div>
+        )}
 
-      {/* Price Badge - Bottom Right (Large curved wedge shape) */}
-      {showPrice && (
-        <div className="price-badge">
-          <span
-            className="price-currency"
-            style={{ fontSize: currencyFontSize }}
+        {/* Cinta triangular - esquina superior derecha */}
+        {showRibbon && item.ribbon && (
+          <div
+            className={`corner-ribbon ${item.ribbon.toLowerCase()}`}
+            style={{ width: `${ribbonSize}px`, height: `${ribbonSize}px` }}
           >
-            S/.
-          </span>
-          <span
-            className="price-integer"
-            style={{ fontSize: `${priceFontSizeAdjusted}px` }}
+            <span style={{ fontSize: `${8.5 * s}px` }}>{item.ribbon}</span>
+          </div>
+        )}
+
+        {/* Nombre del producto */}
+        {showName && (
+          <div
+            ref={nameRef}
+            className="product-name"
+            style={{
+              top: `${nameTop}px`,
+              left: `${cardW * 0.075}px`,
+              width: `${cardW * 0.7}px`,
+              fontSize: `${nameFontSize * s}px`,
+            }}
           >
-            {integer}
-          </span>
-          <span className="price-decimal">.{decimal}</span>
-        </div>
-      )}
+            {item.name}
+          </div>
+        )}
+
+        {/* Código de barras y SKU - abajo a la izquierda */}
+        {showBarcode && item.sku && (
+          <div
+            className="barcode-section"
+            style={{ left: `${cardW * 0.075}px`, bottom: `${cardH * 0.06}px` }}
+          >
+            <svg ref={barcodeRef}></svg>
+            <div className="sku-text" style={{ fontSize: `${6.5 * s}px` }}>
+              SKU {item.sku}
+            </div>
+          </div>
+        )}
+
+        {/* Precio - abajo a la derecha */}
+        {showPrice && (
+          <div
+            className="price-badge"
+            style={{ right: `${cardW * 0.075}px`, bottom: `${cardH * 0.04}px` }}
+          >
+            <span
+              className="price-currency"
+              style={{ fontSize: `${priceFontSize * 0.42 * s}px` }}
+            >
+              S/.
+            </span>
+            <span
+              className="price-integer"
+              style={{ fontSize: `${priceFontSize * s}px` }}
+            >
+              {integer}
+            </span>
+            <span
+              className="price-decimal"
+              style={{ fontSize: `${priceFontSize * 0.5 * s}px` }}
+            >
+              .{decimal}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -172,9 +261,10 @@ const PriceTag: React.FC<{
 export default function App() {
   // Items state
   const [items, setItems] = useState<PriceItem[]>([
-    { id: generateId(), name: "AUDÍFONOS BLUETOOTH PRO", price: 89.90, sku: "AUD001", quantity: 2, ribbon: "OFERTA" },
-    { id: generateId(), name: "CARGADOR USB TIPO-C 25W", price: 35.00, sku: "CARG025", quantity: 3, ribbon: "NUEVO" },
-    { id: generateId(), name: "CABLE HDMI 2.1 ULTRA HD 3M", price: 45.50, sku: "HDMI213", quantity: 1, ribbon: "" },
+    { id: generateId(), name: "LAVAVAJILLA LÍQUIDO", price: 19.90, sku: "0342062", quantity: 2, ribbon: "OFERTA" },
+    { id: generateId(), name: "EDREDÓN 2 PLZ.", price: 59.90, sku: "0342001", quantity: 2, ribbon: "NUEVO" },
+    { id: generateId(), name: "TALADRO PERCUTOR", price: 49.90, sku: "0342993", quantity: 2, ribbon: "OFERTA" },
+    { id: generateId(), name: "JUGUETE CARRO POLICIA", price: 49.90, sku: "0342953", quantity: 2, ribbon: "NUEVO" },
   ]);
 
   // Visibility toggles
@@ -188,9 +278,9 @@ export default function App() {
   const [storeName, setStoreName] = useState("IMPORTACIONES");
 
   // Font sizes
-  const [nameFontSize, setNameFontSize] = useState(14);
-  const [priceFontSize, setPriceFontSize] = useState(32);
-  const [barcodeHeight, setBarcodeHeight] = useState(24);
+  const [nameFontSize, setNameFontSize] = useState(25);
+  const [priceFontSize, setPriceFontSize] = useState(46);
+  const [barcodeHeight, setBarcodeHeight] = useState(28);
 
   // Label dimensions
   const [labelWidth, setLabelWidth] = useState(80);
@@ -377,8 +467,8 @@ export default function App() {
               </div>
               <input
                 type="range"
-                min="8"
-                max="20"
+                min="10"
+                max="34"
                 value={nameFontSize}
                 onChange={(e) => setNameFontSize(Number(e.target.value))}
                 className="slider-input w-full"
@@ -391,8 +481,8 @@ export default function App() {
               </div>
               <input
                 type="range"
-                min="18"
-                max="48"
+                min="24"
+                max="72"
                 value={priceFontSize}
                 onChange={(e) => setPriceFontSize(Number(e.target.value))}
                 className="slider-input w-full"
