@@ -339,8 +339,8 @@ export default function App() {
           if (!row || row.length === 0) continue;
 
           const name = String(row[0] || "").trim();
-          const price = parseFloat(String(row[1] || "0")) || 0;
-          const sku = String(row[2] || "").trim();
+          const sku = String(row[1] || "").trim(); // Columna 1 ahora es el SKU
+          const price = parseFloat(String(row[2] || "0").replace(/[^0-9.]/g, "")) || 0; // Columna 2 ahora es el Precio
           const quantity = parseInt(String(row[3] || "1")) || 1;
           const ribbonRaw = String(row[4] || "").trim().toUpperCase();
           const ribbon = (ribbonRaw === "OFERTA" || ribbonRaw === "NUEVO") ? ribbonRaw : "";
