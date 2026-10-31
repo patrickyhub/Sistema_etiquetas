@@ -1,1 +1,236 @@
 @import "tailwindcss";
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+
+/* Price tag styles */
+.price-tag {
+  overflow: hidden;
+  position: relative;
+  border: 1px dashed #cbd5e1;
+  background: #ffffff;
+  box-sizing: border-box;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.price-tag .corner-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 70px;
+  height: 70px;
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.price-tag .corner-ribbon span {
+  position: absolute;
+  display: block;
+  width: 100px;
+  padding: 4px 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  transform: rotate(45deg);
+  top: 16px;
+  right: -22px;
+  letter-spacing: 0.5px;
+}
+
+.price-tag .corner-ribbon.oferta span {
+  background: #dc2626;
+}
+
+.price-tag .corner-ribbon.nuevo span {
+  background: #16a34a;
+}
+
+.price-tag .product-name {
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #000;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.price-tag .price-badge {
+  background: #76e026;
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.price-tag .price-currency {
+  color: #dc2626;
+  font-weight: 800;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.price-tag .price-integer {
+  color: #dc2626;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.price-tag .price-decimal {
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 0.45em;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.price-tag .barcode-section svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.price-tag .sku-text {
+  font-size: 8px;
+  color: #475569;
+  font-family: monospace;
+}
+
+/* A4 Page */
+.a4-page {
+  width: 210mm;
+  height: 297mm;
+  padding: 5mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0;
+}
+
+/* Print styles */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  html, body, #root {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    height: auto !important;
+    width: 210mm !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset flex container for print */
+  .flex.h-screen {
+    display: block !important;
+    height: auto !important;
+  }
+
+  /* Reset main container for print */
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    height: auto !important;
+  }
+
+  /* A4 page styling for print */
+  .a4-page {
+    width: 210mm !important;
+    height: 297mm !important;
+    padding: 5mm !important;
+    page-break-after: always;
+    break-after: page;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  .a4-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .price-tag {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    border: 1px dashed #cbd5e1 !important;
+  }
+
+  /* Remove screen-only spacing */
+  .space-y-6 {
+    gap: 0 !important;
+  }
+
+  .space-y-6 > * {
+    margin-top: 0 !important;
+  }
+
+  .print-area {
+    display: block !important;
+  }
+}
+
+/* Sidebar styles */
+.sidebar-section {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.sidebar-section:last-child {
+  border-bottom: none;
+}
+
+.slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+  outline: none;
+}
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #0a2540;
+  cursor: pointer;
+}
+
+.toggle-checkbox:checked {
+  background-color: #0a2540;
+  border-color: #0a2540;
+}
