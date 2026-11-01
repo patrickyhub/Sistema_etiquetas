@@ -71,27 +71,40 @@ export const LicenciaGate: React.FC<Props> = ({ children }) => {
         .single();
 
       if (error || !data) {
-        setErrorMensaje('La clave de licencia ingresada no existe en el sistema.');
+        setErrorMensaje('La clave de licencia no existe.');
         localStorage.removeItem('app_licencia_key');
         setCargando(false);
         return;
       }
 
       if (!data.activo) {
-        setErrorMensaje('Esta licencia se encuentra suspendida o dada de baja.');
+        setErrorMensaje('Esta licencia se encuentra suspendida o vencida.');
         setCargando(false);
         return;
       }
 
-      // CASO 1: Primer inicio -> Se vincula de forma definitiva a este equipo
-      if (!data.dispositivo_id) {
+      const dispositivos: string[] = data.dispositivos_autorizados || [];
+      const limite: number = data.max_dispositivos || 1;
+
+      // CASO 1: El equipo actual ya estaba registrado previamente
+      if (dispositivos.includes(visitorId)) {
+        localStorage.setItem('app_licencia_key', clave.trim());
+        setAutorizado(true);
+        setCargando(false);
+        return;
+      }
+
+      // CASO 2: Equipo nuevo y todavía hay cupos disponibles
+      if (dispositivos.length < limite) {
+        const nuevosDispositivos = [...dispositivos, visitorId];
+
         const { error: updateError } = await supabase
           .from('licencias')
-          .update({ dispositivo_id: visitorId })
+          .update({ dispositivos_autorizados: nuevosDispositivos })
           .eq('id', data.id);
 
         if (updateError) {
-          setErrorMensaje('Error al vincular el dispositivo. Verifica los permisos de Supabase.');
+          setErrorMensaje('Error al vincular el nuevo equipo en Supabase.');
           setCargando(false);
           return;
         }
@@ -99,20 +112,15 @@ export const LicenciaGate: React.FC<Props> = ({ children }) => {
         localStorage.setItem('app_licencia_key', clave.trim());
         setAutorizado(true);
       } 
-      // CASO 2: Coincide el equipo autorizado
-      else if (data.dispositivo_id === visitorId) {
-        localStorage.setItem('app_licencia_key', clave.trim());
-        setAutorizado(true);
-      } 
-      // CASO 3: Intento de uso en un dispositivo distinto
+      // CASO 3: Ya se ocuparon todos los dispositivos permitidos
       else {
         setErrorMensaje(
-          `Acceso denegado: Esta licencia pertenece a "${data.cliente}" pero ya se encuentra registrada en otro equipo físico.`
+          `Límite alcanzado: Esta licencia solo permite ${limite} terminal(es) y ya están ocupadas. Comunícate para ampliar el plan de dispositivos.`
         );
       }
     } catch (err: any) {
-      console.error('Fallo de red en Supabase:', err);
-      setErrorMensaje('Error de conexión con la base de datos de licencias.');
+      console.error(err);
+      setErrorMensaje('Error de conexión con el servidor de licencias.');
     } finally {
       setCargando(false);
     }
